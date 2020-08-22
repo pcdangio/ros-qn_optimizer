@@ -7,44 +7,41 @@
 class qn_optimizer
 {
 public:
-    qn_optimizer(uint32_t n_dimensions, std::function<double(const Eigen::Vector2d&)> objective_function);
-
-    void set_objective_gradient(std::function<void(const Eigen::Vector2d&, Eigen::Vector2d&)> objective_gradient);
-
-    void set_goal(double initial_step_size, double objective_threshold);
-    void set_limits(uint32_t max_step_iterations, uint32_t max_optimization_iterations);
-    void set_wolfe_constants(double c1, double c2);
-
-    bool optimize(Eigen::Vector2d& vector, double* final_score = nullptr);
-
-    uint32_t last_step_size_iterations();
-    uint32_t last_optimization_iterations();
-
-private:
-    Eigen::Vector2d v_g_k;
-    Eigen::Matrix2d m_h_k;
-    Eigen::Vector2d v_p_k;
-    Eigen::Vector2d v_dx_k;
-    Eigen::Vector2d v_x_kp;
-    Eigen::Vector2d v_g_kp;
+    qn_optimizer(uint32_t n_dimensions, std::function<double(const Eigen::VectorXd&)> objective_function);
 
     double p_initial_step_size;
-    double p_objective_threshold;
-
+    double p_tau;
     double p_c1;
     double p_c2;
+    double p_epsilon;
+    uint32_t p_max_iterations;
 
-    uint32_t p_max_step_iterations;
-    uint32_t p_max_optimization_iterations;
+    void set_objective_gradient(std::function<void(const Eigen::VectorXd&, Eigen::VectorXd&)> objective_gradient);
 
-    std::function<double(const Eigen::Vector2d&)> m_objective_function;
-    std::function<void(const Eigen::Vector2d&, Eigen::Vector2d&)> m_objective_gradient;
+    bool optimize(Eigen::VectorXd& vector, double* final_score = nullptr);
 
-    uint32_t m_iterations_step;
-    uint32_t m_iterations_optimize;
+    std::vector<uint32_t> iterations();
 
-    void reset();
-    void gradient_approximator(const Eigen::Vector2d& operating_point, Eigen::Vector2d& gradient);
+private:
+    Eigen::VectorXd v_g_k;
+    Eigen::MatrixXd m_h_k;
+    Eigen::VectorXd v_p_k;
+    Eigen::VectorXd v_dx_k;
+    Eigen::VectorXd v_dx_k_t;
+    Eigen::VectorXd v_y_k;
+    Eigen::VectorXd v_y_k_t;
+    Eigen::VectorXd v_x_kp;
+    Eigen::VectorXd v_g_kp;
+    Eigen::MatrixXd m_i;
+    Eigen::MatrixXd m_t1;
+    Eigen::MatrixXd m_t2;
+
+    std::function<double(const Eigen::VectorXd&)> objective_function;
+    std::function<void(const Eigen::VectorXd&, Eigen::VectorXd&)> objective_gradient;
+
+    std::vector<uint32_t> m_iterations;
+
+    void gradient_approximator(const Eigen::VectorXd& operating_point, Eigen::VectorXd& gradient);
 };
 
 #endif
