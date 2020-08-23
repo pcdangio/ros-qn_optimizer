@@ -1,6 +1,7 @@
 #ifndef QN_OPTIMIZER_H
 #define QN_OPTIMIZER_H
 
+#include <vector>
 #include <functional>
 #include <eigen3/Eigen/Dense>
 
