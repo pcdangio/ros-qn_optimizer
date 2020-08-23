@@ -12,6 +12,7 @@ qn_optimizer::qn_optimizer(uint32_t n_dimensions, std::function<double(const Eig
     qn_optimizer::p_c1 = 0.0001;
     qn_optimizer::p_c2 = 0.9;
     qn_optimizer::p_epsilon = 0.001;
+    qn_optimizer::p_perturbation = 0.001;
     qn_optimizer::p_max_iterations = 100;
 
     // Set default objective gradient function to approximator.
@@ -31,6 +32,7 @@ qn_optimizer::qn_optimizer(uint32_t n_dimensions, std::function<double(const Eig
     qn_optimizer::m_i.setIdentity(n_dimensions, n_dimensions);
     qn_optimizer::m_t1.setZero(n_dimensions, n_dimensions);
     qn_optimizer::m_t2.setZero(n_dimensions, n_dimensions);
+    qn_optimizer::v_xp.setZero(n_dimensions);
 }
 
 // USER METHODS
@@ -43,12 +45,13 @@ std::vector<uint32_t> qn_optimizer::iterations()
     return qn_optimizer::m_iterations;
 }
 
-
 // OPTIMIZATION
 bool qn_optimizer::optimize(Eigen::VectorXd& vector, double* final_score)
 {
     // Initialize Hessian to identity.
     qn_optimizer::m_h_k.setIdentity();
+    // Reset iteration count vector.
+    qn_optimizer::m_iterations.clear();
 
     // Calculate starting values for f_k, g_k.
     double f_k = qn_optimizer::objective_function(vector);
@@ -135,7 +138,9 @@ bool qn_optimizer::optimize(Eigen::VectorXd& vector, double* final_score)
             // Quit and indicate optimal result.
             return true;
         }
-        else if(qn_optimizer::m_iterations.size() == qn_optimizer::p_max_iterations)
+
+        // Check if max iterations reached.
+        if(qn_optimizer::m_iterations.size() == qn_optimizer::p_max_iterations)
         {
             // Max iterations reached.
             // Capture final score if provided.
@@ -174,5 +179,24 @@ bool qn_optimizer::optimize(Eigen::VectorXd& vector, double* final_score)
         qn_optimizer::m_t1 /= y_dot_dx;
         // (I-fraction_1)*H*(I-fraction_2) + fraction_3
         qn_optimizer::m_h_k += qn_optimizer::m_t1;
+    }
+}
+void qn_optimizer::gradient_approximator(const Eigen::VectorXd& operating_point, Eigen::VectorXd& gradient)
+{
+    // Evaluate the objective function at the operating point.
+    double f1 = qn_optimizer::objective_function(operating_point);
+
+    // Iterate over each variable, perturbing it and calculating the derivative.
+    for(uint32_t i = 0; i < operating_point.size(); ++i)
+    {
+        // Create the perturbed vector.
+        qn_optimizer::v_xp = operating_point;
+        qn_optimizer::v_xp(i) += qn_optimizer::p_perturbation;
+
+        // Evaluate objective function at perturbed operating point.
+        double f2 = qn_optimizer::objective_function(qn_optimizer::v_xp);
+
+        // Calculate derivative and store in gradient vector.
+        gradient(i) = (f2 - f1)/qn_optimizer::p_perturbation;
     }
 }

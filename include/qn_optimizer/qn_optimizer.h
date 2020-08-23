@@ -14,6 +14,7 @@ public:
     double p_c1;
     double p_c2;
     double p_epsilon;
+    double p_perturbation;
     uint32_t p_max_iterations;
 
     void set_objective_gradient(std::function<void(const Eigen::VectorXd&, Eigen::VectorXd&)> objective_gradient);
@@ -35,6 +36,7 @@ private:
     Eigen::MatrixXd m_i;
     Eigen::MatrixXd m_t1;
     Eigen::MatrixXd m_t2;
+    Eigen::VectorXd v_xp;
 
     std::function<double(const Eigen::VectorXd&)> objective_function;
     std::function<void(const Eigen::VectorXd&, Eigen::VectorXd&)> objective_gradient;
