@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(qn-optimizer)
+project(qn_optimizer)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
@@ -13,7 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
-
+find_package(Eigen3 REQUIRED)
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -102,9 +102,9 @@ find_package(catkin REQUIRED COMPONENTS
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES qn-optimizer
-#  CATKIN_DEPENDS roscpp
-#  DEPENDS system_lib
+  LIBRARIES qn_optimizer
+  CATKIN_DEPENDS roscpp
+  DEPENDS EIGEN3
 )
 
 ###########
@@ -114,14 +114,13 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-# include
+  include
+  ${EIGEN3_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
 )
 
-## Declare a C++ library
-# add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/qn-optimizer.cpp
-# )
+# Declare a C++ library
+add_library(${PROJECT_NAME} src/qn_optimizer.cpp)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
