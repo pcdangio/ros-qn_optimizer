@@ -85,14 +85,11 @@ bool qn_optimizer::optimize(Eigen::VectorXd& vector, double* final_score)
         // Start at initial step size.
         double a_k = qn_optimizer::p_initial_step_size;
         uint32_t iterations_step_size = 0;
+        bool step_size_found = false;
         while(true)
         {
             // Increment step size iteration count.
             iterations_step_size++;
-            if(iterations_step_size > qn_optimizer::p_max_step_iterations)
-            {
-                break;
-            }
 
             // Calculate dx_k.
             qn_optimizer::v_dx_k = a_k * qn_optimizer::v_p_k;
@@ -112,8 +109,17 @@ bool qn_optimizer::optimize(Eigen::VectorXd& vector, double* final_score)
                 if(qn_optimizer::v_p_k.dot(qn_optimizer::v_g_kp) >= qn_optimizer::p_c2 * ptg_k)
                 {
                     // Both Wolfe Conditions met.
+                    step_size_found = true;
                     break;
                 }
+            }
+
+            // If this point reached, wolfe conditions have not been met on this iteration.
+
+            // Check if step iteration may continue.
+            if(iterations_step_size == qn_optimizer::p_max_step_iterations)
+            {
+                break;
             }
 
             // Backtrack step size.
@@ -121,6 +127,19 @@ bool qn_optimizer::optimize(Eigen::VectorXd& vector, double* final_score)
         }
         // Add step iterations to array.
         qn_optimizer::m_iterations.push_back(iterations_step_size);
+
+        // Check if step size was found.
+        if(!step_size_found)
+        {
+            // Max step iterations reached.
+            // Capture final score if provided.
+            if(final_score)
+            {
+                *final_score = f_k;
+            }
+            // Quit and indicate non-optimal result.
+            return false;
+        }
 
         // Suitable step size found.
         // dx_k, x_k+1, f_kp, g_kp are already set.
