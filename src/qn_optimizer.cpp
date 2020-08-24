@@ -32,8 +32,8 @@ void qn_optimizer::initialize(uint32_t n_dimensions)
     qn_optimizer::p_c2 = 0.9;
     qn_optimizer::p_epsilon = 0.00001;
     qn_optimizer::p_perturbation = 0.0000000001;
-    qn_optimizer::p_max_iterations = 100;
-    qn_optimizer::p_max_step_iterations = 100;
+    qn_optimizer::p_max_iterations = std::numeric_limits<uint32_t>::max();
+    qn_optimizer::p_max_step_iterations = std::numeric_limits<uint32_t>::max();
 
     // Initialize vector/matrix storage.
     qn_optimizer::v_g_k.setZero(n_dimensions);
@@ -52,7 +52,7 @@ void qn_optimizer::initialize(uint32_t n_dimensions)
 }
 
 // USER METHODS
-std::vector<uint32_t> qn_optimizer::iterations()
+std::vector<uint32_t> qn_optimizer::iterations() const
 {
     return qn_optimizer::m_iterations;
 }

@@ -22,7 +22,8 @@ public:
 
     bool optimize(Eigen::VectorXd& vector, double* final_score = nullptr);
 
-    std::vector<uint32_t> iterations();
+    // PROPERTIES
+    std::vector<uint32_t> iterations() const;
 
 private:
     Eigen::VectorXd v_g_k;
