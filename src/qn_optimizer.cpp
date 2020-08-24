@@ -3,9 +3,28 @@
 // CONSTRUCTORS
 qn_optimizer::qn_optimizer(uint32_t n_dimensions, std::function<double(const Eigen::VectorXd&)> objective_function)
 {
+    // Initialize members.
+    qn_optimizer::initialize(n_dimensions);
+
     // Store objective function.
     qn_optimizer::objective_function = objective_function;
 
+    // Set default objective gradient function to approximator.
+    qn_optimizer::objective_gradient = std::bind(&qn_optimizer::gradient_approximator, this, std::placeholders::_1, std::placeholders::_2);
+}
+qn_optimizer::qn_optimizer(uint32_t n_dimensions, std::function<double(const Eigen::VectorXd&)> objective_function, std::function<void(const Eigen::VectorXd&, Eigen::VectorXd&)> objective_gradient)
+{
+    // Initialize members.
+    qn_optimizer::initialize(n_dimensions);
+
+    // Store objective function.
+    qn_optimizer::objective_function = objective_function;
+
+    // Store objective gradient function.
+    qn_optimizer::objective_gradient = objective_gradient;
+}
+void qn_optimizer::initialize(uint32_t n_dimensions)
+{
     // Set default values.
     qn_optimizer::p_initial_step_size = 1.0;
     qn_optimizer::p_tau = 0.75;
@@ -14,10 +33,7 @@ qn_optimizer::qn_optimizer(uint32_t n_dimensions, std::function<double(const Eig
     qn_optimizer::p_epsilon = 0.00001;
     qn_optimizer::p_perturbation = 0.0000000001;
     qn_optimizer::p_max_iterations = 100;
-
-    // Set default objective gradient function to approximator.
-    // NOTE: It may be replaced by an actual gradient function with set_objective_gradient.
-    qn_optimizer::objective_gradient = std::bind(&qn_optimizer::gradient_approximator, this, std::placeholders::_1, std::placeholders::_2);
+    qn_optimizer::p_max_step_iterations = 100;
 
     // Initialize vector/matrix storage.
     qn_optimizer::v_g_k.setZero(n_dimensions);
@@ -36,10 +52,6 @@ qn_optimizer::qn_optimizer(uint32_t n_dimensions, std::function<double(const Eig
 }
 
 // USER METHODS
-void qn_optimizer::set_objective_gradient(std::function<void(const Eigen::VectorXd&, Eigen::VectorXd&)> objective_gradient)
-{
-    qn_optimizer::objective_gradient = objective_gradient;
-}
 std::vector<uint32_t> qn_optimizer::iterations()
 {
     return qn_optimizer::m_iterations;
@@ -77,6 +89,10 @@ bool qn_optimizer::optimize(Eigen::VectorXd& vector, double* final_score)
         {
             // Increment step size iteration count.
             iterations_step_size++;
+            if(iterations_step_size > qn_optimizer::p_max_step_iterations)
+            {
+                break;
+            }
 
             // Calculate dx_k.
             qn_optimizer::v_dx_k = a_k * qn_optimizer::v_p_k;
@@ -100,7 +116,6 @@ bool qn_optimizer::optimize(Eigen::VectorXd& vector, double* final_score)
                 }
             }
 
-            // If this point reached, Wolfe Conditions have not been met.
             // Backtrack step size.
             a_k *= qn_optimizer::p_tau;
         }

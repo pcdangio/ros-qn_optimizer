@@ -9,6 +9,7 @@ class qn_optimizer
 {
 public:
     qn_optimizer(uint32_t n_dimensions, std::function<double(const Eigen::VectorXd&)> objective_function);
+    qn_optimizer(uint32_t n_dimensions, std::function<double(const Eigen::VectorXd&)> objective_function, std::function<void(const Eigen::VectorXd&, Eigen::VectorXd&)> objective_gradient);
 
     double p_initial_step_size;
     double p_tau;
@@ -17,8 +18,7 @@ public:
     double p_epsilon;
     double p_perturbation;
     uint32_t p_max_iterations;
-
-    void set_objective_gradient(std::function<void(const Eigen::VectorXd&, Eigen::VectorXd&)> objective_gradient);
+    uint32_t p_max_step_iterations;
 
     bool optimize(Eigen::VectorXd& vector, double* final_score = nullptr);
 
@@ -44,6 +44,7 @@ private:
 
     std::vector<uint32_t> m_iterations;
 
+    void initialize(uint32_t n_dimensions);
     void gradient_approximator(const Eigen::VectorXd& operating_point, Eigen::VectorXd& gradient);
 };
 
