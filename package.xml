@@ -3,12 +3,12 @@
 
   <name>qn_optimizer</name>
   <version>1.0.0</version>
-  <description>Provides a C++ library for Quasi Newton Optimization.</description>
+  <description>Provides a C++ library for Quasi-Newton Optimization.</description>
 
   <author email="pcdangio@gmail.com">Paul D'Angio</author>
   <maintainer email="pcdangio@gmail.com">Paul D'Angio</maintainer>
 
-  <license>PROPRIETARY</license>
+  <license>MIT</license>
 
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>Eigen3</build_depend>
