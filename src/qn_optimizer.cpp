@@ -11,8 +11,8 @@ qn_optimizer::qn_optimizer(uint32_t n_dimensions, std::function<double(const Eig
     qn_optimizer::p_tau = 0.75;
     qn_optimizer::p_c1 = 0.0001;
     qn_optimizer::p_c2 = 0.9;
-    qn_optimizer::p_epsilon = 0.001;
-    qn_optimizer::p_perturbation = 0.001;
+    qn_optimizer::p_epsilon = 0.00001;
+    qn_optimizer::p_perturbation = 0.0000000001;
     qn_optimizer::p_max_iterations = 100;
 
     // Set default objective gradient function to approximator.
@@ -24,9 +24,9 @@ qn_optimizer::qn_optimizer(uint32_t n_dimensions, std::function<double(const Eig
     qn_optimizer::m_h_k.setZero(n_dimensions, n_dimensions);
     qn_optimizer::v_p_k.setZero(n_dimensions);
     qn_optimizer::v_dx_k.setZero(n_dimensions);
-    qn_optimizer::v_dx_k_t.setZero(n_dimensions);
+    qn_optimizer::v_dx_k_t.setZero(1, n_dimensions);
     qn_optimizer::v_y_k.setZero(n_dimensions);
-    qn_optimizer::v_y_k_t.setZero(n_dimensions);
+    qn_optimizer::v_y_k_t.setZero(1, n_dimensions);
     qn_optimizer::v_x_kp.setZero(n_dimensions);
     qn_optimizer::v_g_kp.setZero(n_dimensions);
     qn_optimizer::m_i.setIdentity(n_dimensions, n_dimensions);
@@ -75,6 +75,9 @@ bool qn_optimizer::optimize(Eigen::VectorXd& vector, double* final_score)
         uint32_t iterations_step_size = 0;
         while(true)
         {
+            // Increment step size iteration count.
+            iterations_step_size++;
+
             // Calculate dx_k.
             qn_optimizer::v_dx_k = a_k * qn_optimizer::v_p_k;
             // Calculate x_k+1 using step direction and current step size.
@@ -100,9 +103,6 @@ bool qn_optimizer::optimize(Eigen::VectorXd& vector, double* final_score)
             // If this point reached, Wolfe Conditions have not been met.
             // Backtrack step size.
             a_k *= qn_optimizer::p_tau;
-
-            // Increment step size iteration count.
-            iterations_step_size++;
         }
         // Add step iterations to array.
         qn_optimizer::m_iterations.push_back(iterations_step_size);
@@ -119,7 +119,7 @@ bool qn_optimizer::optimize(Eigen::VectorXd& vector, double* final_score)
         bool optimized = true;
         for(uint32_t i = 0; i < qn_optimizer::v_g_kp.size(); ++i)
         {
-            if(qn_optimizer::v_g_kp(i) > qn_optimizer::p_epsilon)
+            if(std::abs(qn_optimizer::v_g_kp(i)) > qn_optimizer::p_epsilon)
             {
                 optimized = false;
                 break;
@@ -154,11 +154,14 @@ bool qn_optimizer::optimize(Eigen::VectorXd& vector, double* final_score)
 
         // If this point is reached, optimization must continue.
 
-        // Update g_k to g_k+1.
-        qn_optimizer::v_g_k = qn_optimizer::v_g_kp;
-
+        // Transpose dx_k.
+        qn_optimizer::v_dx_k_t = qn_optimizer::v_dx_k.transpose();
         // Calculate y_k.
         qn_optimizer::v_y_k = qn_optimizer::v_g_kp - qn_optimizer::v_g_k;
+        qn_optimizer::v_y_k_t = qn_optimizer::v_y_k.transpose();
+
+        // Update g_k to g_k+1.
+        qn_optimizer::v_g_k = qn_optimizer::v_g_kp;
 
         // Update Hessian with BFGS.
         double y_dot_dx = qn_optimizer::v_y_k.dot(qn_optimizer::v_dx_k);

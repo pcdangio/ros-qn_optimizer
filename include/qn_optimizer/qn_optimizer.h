@@ -29,9 +29,9 @@ private:
     Eigen::MatrixXd m_h_k;
     Eigen::VectorXd v_p_k;
     Eigen::VectorXd v_dx_k;
-    Eigen::VectorXd v_dx_k_t;
+    Eigen::MatrixXd v_dx_k_t;
     Eigen::VectorXd v_y_k;
-    Eigen::VectorXd v_y_k_t;
+    Eigen::MatrixXd v_y_k_t;
     Eigen::VectorXd v_x_kp;
     Eigen::VectorXd v_g_kp;
     Eigen::MatrixXd m_i;
