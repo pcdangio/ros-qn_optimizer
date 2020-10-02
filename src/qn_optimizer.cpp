@@ -149,19 +149,8 @@ bool qn_optimizer::optimize(Eigen::VectorXd& vector, double* final_score)
         // Update f_k to f_k+1.
         f_k = f_kp;
 
-        // Check if g_k+1 is less than epsilon.
-        bool optimized = true;
-        for(uint32_t i = 0; i < qn_optimizer::v_g_kp.size(); ++i)
-        {
-            if(std::abs(qn_optimizer::v_g_kp(i)) > qn_optimizer::p_epsilon)
-            {
-                optimized = false;
-                break;
-            }
-        }
-
         // Check if optimization goal reached.
-        if(optimized)
+        if(qn_optimizer::v_g_kp.norm() < qn_optimizer::p_epsilon)
         {
             // Goal reached.
             // Capture final score if provided.
